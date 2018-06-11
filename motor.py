@@ -1,64 +1,98 @@
-import sys
+#!/usr/bin/env python.
+# -*- coding: utf-8 -*-
+
+#########################################################################
+#                                                                       #
+# This will eventually be the backend for a robot car controller.       #
+#                                                                       #
+#########################################################################
+#                                                                       #
+#      Michael Tychonievich, Ph.D.                    June, 2018        #
+#                                                                       #
+#########################################################################
+
+# import sys
 import time
 import RPi.GPIO as GPIO
 
-mode=GPIO.getmode()
-print("current GPIO mode: " + str(mode))
 
 GPIO.cleanup()
-
-class motor:
-    def __init__(self, forward, backward):
-        self.forward = forward
-        self.backward = backward
-    
-right_motor = motor(5,6)
-left_motor = motor(13,19)
-
+GPIO.setmode(GPIO.BCM)
 sleeptime = 1
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(right_motor.forward, GPIO.OUT, initial=0)
-GPIO.setup(right_motor.backward, GPIO.OUT, initial=0)
-GPIO.setup(left_motor.forward, GPIO.OUT, initial=0)
-GPIO.setup(left_motor.backward, GPIO.OUT, initial=0)
+
+def on(pin_BCM_number):
+    GPIO.output(pin_BCM_number, GPIO.HIGH)
 
 
+def off(pin_BCM_number):
+    GPIO.output(pin_BCM_number, GPIO.LOW)
 
-def forward(x):
-    GPIO.output(right_motor.forward, GPIO.HIGH)
-    GPIO.output(left_motor.forward, GPIO.HIGH)
-    print("Moving forward")
-    time.sleep(x)
-    GPIO.output(right_motor.forward, GPIO.LOW)
-    GPIO.output(left_motor.forward, GPIO.LOW)
-          
-def reverse(x):
-    GPIO.output(right_motor.backward, GPIO.HIGH)
-    GPIO.output(left_motor.backward, GPIO.HIGH)
-    print("Moving forward")
-    time.sleep(x)
-    GPIO.output(right_motor.backward, GPIO.LOW)
-    GPIO.output(left_motor.backward, GPIO.LOW)
-    
-def right_in_place(x):
-    GPIO.output(right_motor.forward, GPIO.HIGH)
-    GPIO.output(left_motor.backward, GPIO.HIGH)
-    print("Moving forward")
-    time.sleep(x)
-    GPIO.output(right_motor.forward, GPIO.LOW)
-    GPIO.output(left_motor.backward, GPIO.LOW)
 
-def left_in_place(x):
-    GPIO.output(right_motor.backward, GPIO.HIGH)
-    GPIO.output(left_motor.forward, GPIO.HIGH)
-    print("Moving forward")
-    time.sleep(x)
-    GPIO.output(right_motor.backward, GPIO.LOW)
-    GPIO.output(left_motor.forward, GPIO.LOW)
+class Motor:
+    def __init__(self, forward, reverse, enable):
+        self.forward = forward
+        self.reverse = reverse
+        self.enable = enable
+        GPIO.setup(self.forward, GPIO.OUT, initial=0)
+        GPIO.setup(self.reverse, GPIO.OUT, initial=0)
+        GPIO.setup(self.enable, GPIO.OUT, initial=0)
 
-#right_in_place(.3)
-#left_in_place(.1)
-#forward(.5)
-reverse(2)
+
+class Car:
+    def __init__(self, right_motor, left_motor):
+        self.right = right_motor
+        self.left = left_motor
+
+    def enable(self):
+        on(self.right.enable)
+        on(self.left.enable)
+
+    def disable(self):
+        off(self.right.enable)
+        off(self.left.enable)
+
+    def forward(self, do_time):
+        on(self.right.forward)
+        on(self.left.forward)
+        print("Moving forward.")
+        time.sleep(do_time)
+        off(self.right.forward)
+        off(self.left.forward)
+
+    def reverse(self, do_time):
+        on(self.right.reverse)
+        on(self.left.reverse)
+        print("Reversing.")
+        time.sleep(do_time)
+        off(self.right.reverse)
+        off(self.left.reverse)
+
+    def right_in_place(self, do_time):
+        on(self.right.forward)
+        on(self.left.reverse)
+        print("Spinning clockwise.")
+        time.sleep(do_time)
+        off(self.right.forward)
+        off(self.left.reverse)
+
+    def left_in_place(self, do_time):
+        on(self.right.reverse)
+        on(self.left.forward)
+        print("Spinning counter-clockwise.")
+        time.sleep(do_time)
+        off(self.right.reverse)
+        off(self.left.forward)
+
+
+right_motor = Motor(5, 6, 13)
+left_motor = Motor(18, 23, 24)
+car = Car(right_motor, left_motor)
+car.enable()
+
+# right_in_place(.3)
+# left_in_place(.1)
+# forward(.5)
+car.reverse(2)
+car.disable()
 GPIO.cleanup()
