@@ -62,18 +62,17 @@ class Car:
         on(self.right.forward)
         on(self.left.forward)
 
-    def reverse(self, do_time):
+    def reverse(self):
         on(self.right.reverse)
         on(self.left.reverse)
 
-    def right_in_place(self, do_time):
+    def right_in_place(self):
         on(self.right.forward)
         on(self.left.reverse)
 
-    def left_in_place(self, do_time):
+    def left_in_place(self):
         on(self.right.reverse)
         on(self.left.forward)
-
 
 
 right_motor = Motor(5, 6, 13)
