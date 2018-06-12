@@ -13,31 +13,38 @@
 
 # import sys
 import time
-import RPi.GPIO as GPIO
+import pigpio
 
+pi = pigpio.pi
 
-# GPIO.cleanup()
-GPIO.setmode(GPIO.BCM)
-sleeptime = 1
+if not pi.connected:
+    exit()
+
 
 
 def on(pin_BCM_number):
-    GPIO.output(pin_BCM_number, GPIO.HIGH)
+    pi.write(pin_BCM_number, 1)
 
 
 def off(pin_BCM_number):
-    GPIO.output(pin_BCM_number, GPIO.LOW)
+    pi.write(pin_BCM_number, 0)
+
+
+def pwm(pin_BCM_number, percent_duty):
+    pi.set_PWM_dutycycle(pin_BCM_number, percent_duty)
 
 
 class Motor:
-    def __init__(self, forward, reverse, enable):
+    def __init__(self, pi, forward, reverse, enable):
+        self.pi = pi
         self.forward = forward
         self.reverse = reverse
         self.enable = enable
-        GPIO.setup(self.forward, GPIO.OUT, initial=0)
-        GPIO.setup(self.reverse, GPIO.OUT, initial=0)
-        GPIO.setup(self.enable, GPIO.OUT, initial=0)
-
+        self.pi.set_mode(forward, pigpio.OUTPUT)
+        self.pi.set_mode(reverse, pigpio.OUTPUT)
+        self.pi.set_mode(enable, pigpio.OUTPUT)
+        pi.set_PWM_frequency(self.enable, 320)
+        pi.set_PWM_range(self.enable, 100)
 
 class Car:
     def __init__(self, right_motor, left_motor):
@@ -87,4 +94,5 @@ car.reverse()
 time.sleep(2)
 car.disable()
 car.stop()
-GPIO.cleanup()
+
+pi.stop()
