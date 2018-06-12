@@ -52,47 +52,40 @@ class Car:
         off(self.right.enable)
         off(self.left.enable)
 
-    def forward(self, do_time):
-        on(self.right.forward)
-        on(self.left.forward)
-        print("Moving forward.")
-        time.sleep(do_time)
+    def stop(self):
         off(self.right.forward)
         off(self.left.forward)
+        off(self.right.reverse)
+        off(self.left.reverse)
+
+    def forward(self):
+        on(self.right.forward)
+        on(self.left.forward)
 
     def reverse(self, do_time):
         on(self.right.reverse)
         on(self.left.reverse)
-        print("Reversing.")
-        time.sleep(do_time)
-        off(self.right.reverse)
-        off(self.left.reverse)
 
     def right_in_place(self, do_time):
         on(self.right.forward)
         on(self.left.reverse)
-        print("Spinning clockwise.")
-        time.sleep(do_time)
-        off(self.right.forward)
-        off(self.left.reverse)
 
     def left_in_place(self, do_time):
         on(self.right.reverse)
         on(self.left.forward)
-        print("Spinning counter-clockwise.")
-        time.sleep(do_time)
-        off(self.right.reverse)
-        off(self.left.forward)
+
 
 
 right_motor = Motor(5, 6, 13)
-left_motor = Motor(18, 23, 24)
+left_motor = Motor(23, 24, 18)
 car = Car(right_motor, left_motor)
 car.enable()
 
 # right_in_place(.3)
 # left_in_place(.1)
 # forward(.5)
-car.reverse(2)
+car.reverse()
+time.sleep(2)
 car.disable()
+car.stop()
 GPIO.cleanup()
