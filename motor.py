@@ -48,6 +48,12 @@ class Car:
         on(self.right.enable)
         on(self.left.enable)
 
+    def duty_change(self, right_duty, left_duty):
+        self.right_pulse = GPIO.PWM(self.right.enable, 100)
+        self.left_pulse = GPIO.PWM(self.left.enable, 100)
+        self.right_pulse.start(right_duty)
+        self.left_pulse.start(left_duty)
+
     def disable(self):
         off(self.right.enable)
         off(self.left.enable)
@@ -78,12 +84,11 @@ class Car:
 right_motor = Motor(5, 6, 13)
 left_motor = Motor(23, 24, 18)
 car = Car(right_motor, left_motor)
-car.enable()
 
-# right_in_place(.3)
-# left_in_place(.1)
-# forward(.5)
-car.reverse()
+car.enable()
+car.forward()
+time.sleep(2)
+car.duty_change(5, 5)
 time.sleep(2)
 car.disable()
 car.stop()
