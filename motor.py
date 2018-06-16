@@ -23,13 +23,16 @@ sleeptime = 1
 # package.  This might be needed if the streaming video causes the
 # software pwm to lag.
 
+
 def on(pin_BCM_number):
     """Turns on a named GPIO pin."""
     GPIO.output(pin_BCM_number, GPIO.HIGH)
 
+
 def off(pin_BCM_number):
     """Turns off a named GPIO pin."""
     GPIO.output(pin_BCM_number, GPIO.LOW)
+
 
 def out(pin_BCM_number):
     """Establishes named GPIO pin as an output pin."""
@@ -44,7 +47,7 @@ class PWM:
     all of the time.
     """
     def __init__(self, pin_BCM_number, duty=None):
-        if duty != None:
+        if duty is not None:
             self.duty = duty
         else:
             self.duty = 25
@@ -57,18 +60,18 @@ class PWM:
         self.duty = 0
 
     def start(self, duty=None):
-        if duty != None:
+        if duty is not None:
             self.duty = duty
         self.generator.start(duty)
 
     def change_duty(self, duty=None):
-        if duty != None:
+        if duty is not None:
             self.duty = duty
         self.generator.ChangeDutyCycle(self.duty)
 
 
 class Motor:
-    """This is the class to handle the motors of the car.  The motor 
+    """This is the class to handle the motors of the car.  The motor
     controller I use forces me to group motors together, and I did
     so by the side of the car they were on, like tank treads.
     """
@@ -89,13 +92,13 @@ class Motor:
         """This only starts up the enable pin for the motor.  The motor
         will not turn until told to go either forward or backward.
         """
-        if duty != None:
+        if duty is not None:
             self.speed = duty
         self.pwm.start(self.speed)
 
     def set_speed(self, duty=None):
         """This changes the duty cycle of the pwm without stopping it."""
-        if duty != None:
+        if duty is not None:
             self.speed = duty
         self.pwm.change_duty(self.speed)
 
@@ -126,7 +129,7 @@ class Motor:
         """
         on(self.forward_pin)
         off(self.reverse_pin)
-        if duty != None:
+        if duty is not None:
             self.speed = duty
         self.set_speed(self.speed)
 
@@ -136,7 +139,7 @@ class Motor:
         """
         on(self.reverse_pin)
         off(self.forward_pin)
-        if duty != None:
+        if duty is not None:
             self.speed = duty
         self.set_speed(self.speed)
 
@@ -144,7 +147,7 @@ class Motor:
 class Car:
     """This class groups together two motors to allow more intuitive
     simultaneous control.  Its methods consist of a command to the right
-    side of the car and a command to the left side of the car.  This will 
+    side of the car and a command to the left side of the car.  This will
     be the class which the interface programs use to control the car.
     """
     def __init__(self, right_motor, left_motor):
