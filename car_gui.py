@@ -15,23 +15,6 @@
 import fake_motor as motor
 import Tkinter as tk
 
-import time
-
-'''
-Commands for changing the state of the car's motors:
-enable(right_duty=None, left_duty=None)
-set_speed(right_duty=None, left_duty=None)
-disable()
-
-stop()
-stall()
-
-forward(right_duty=None, left_duty=None)
-reverse(right_duty=None, left_duty=None)
-spin_right(right_duty=None, left_duty=None)
-spin_left(right_duty=None, left_duty=None)
-'''
-
 
 class CarGUI(tk.Frame):
     def __init__(self, parent):
@@ -43,6 +26,10 @@ class CarGUI(tk.Frame):
         self.buffer_frame = BufferFrame(self, 1, 100, tk.LEFT)
         self.slider_frame_right = SliderFrame(self, self.car.right)
         self.pin_frame_right = PinFrame(self, self.car.right)
+
+    def update(self):
+        self.pin_frame_left.update()
+        self.pin_frame_right.update()
 
 
 class BufferFrame(tk.Frame):
@@ -57,31 +44,51 @@ class PinFrame(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.motor = motor
         self.pack(side=tk.LEFT)
-        self.forward_signal = tk.Frame(self, parent, height=100,
-                                       width=100, relief=tk.RAISED)
+        self.forward_signal = tk.Frame(self, parent, height=50,
+                                       width=50, relief=tk.RAISED)
         self.forward_signal.pack(side=tk.TOP)
         self.buffer_frame = BufferFrame(self, 100, 100, tk.TOP)
-        self.backward_signal = tk.Frame(self, parent, height=100,
-                                        width=100, relief=tk.RAISED)
-        self.backward_signal.pack(side=tk.TOP)
-
+        self.reverse_signal = tk.Frame(self, parent, height=50,
+                                       width=50, relief=tk.RAISED)
+        self.reverse_signal.pack(side=tk.TOP)
+        self.update()
 
     def update(self):
-        pass
+        if self.motor.forward_pin.state == "on":
+            self.forward_signal.config(background="green")
+        elif self.motor.forward_pin.state == "off":
+            self.forward_signal.config(background="red")
+        else:
+            self.forward_signal.config(background="white")
+        if self.motor.reverse_pin.state == "on":
+            self.reverse_signal.config(background="green")
+        elif self.motor.reverse_pin.state == "off":
+            self.reverse_signal.config(background="red")
+        else:
+            self.reverse_signal.config(background="white")
 
 
 class SliderFrame(tk.Frame):
     def __init__(self, parent, motor):
+        self.motor = motor
         tk.Frame.__init__(self, parent)
         self.pack(side=tk.LEFT, expand=False)
         self.slider = tk.Scale(self, from_=100, to=-100, orient=tk.VERTICAL,
-                               length=300)
+                               length=300, resolution=5,
+                               command=lambda value:
+                                   self.scale_move(float(value)))
         self.slider.pack(side=tk.LEFT)
 
-
-
-
-
+    def scale_move(self, x):
+        if x > 15:
+            self.motor.forward(x)
+        elif x < -15:
+            self.motor.reverse(x)
+        elif abs(x) < 5:
+            self.motor.stop()
+        else:
+            self.motor.stall()
+        app.update()
 
 
 root = tk.Tk()

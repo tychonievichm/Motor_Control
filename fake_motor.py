@@ -57,12 +57,10 @@ class PWM(Pin):
         if duty is not None:
             self.duty = duty
         self.state = "on"
-        self.duty = duty
 
     def change_duty(self, duty=None):
         if duty is not None:
             self.duty = duty
-        self.duty = duty
 
 
 class Motor:

@@ -24,22 +24,26 @@ sleeptime = 1
 # software pwm to lag.
 
 
-def on(pin_BCM_number):
-    """Turns on a named GPIO pin."""
-    GPIO.output(pin_BCM_number, GPIO.HIGH)
+class Pin:
+    def __init__(self, pin_BCM_number):
+        self.number = pin_BCM_number
+        self.is_out = None
+        self.state = "off"
+
+    def on(self):
+        self.state = "on"
+        GPIO.output(self.number, GPIO.HIGH)
+
+    def off(self):
+        self.state = "off"
+        GPIO.output(self.number, GPIO.LOW)
+
+    def out(self):
+        self.is_out = True
+        GPIO.setup(self.number, GPIO.OUT, initial=0)
 
 
-def off(pin_BCM_number):
-    """Turns off a named GPIO pin."""
-    GPIO.output(pin_BCM_number, GPIO.LOW)
-
-
-def out(pin_BCM_number):
-    """Establishes named GPIO pin as an output pin."""
-    GPIO.setup(pin_BCM_number, GPIO.OUT, initial=0)
-
-
-class PWM:
+class PWM(Pin):
     """Establishes named GPIO output pin as a pulse width modulation pin,
     and gives an API to interact with the pwm.  In the current
     implementation, duty should be a number between 0 and 100, inclusive,
@@ -47,6 +51,7 @@ class PWM:
     all of the time.
     """
     def __init__(self, pin_BCM_number, duty=None):
+        Pin.__init__(self, pin_BCM_number)
         if duty is not None:
             self.duty = duty
         else:
@@ -54,14 +59,17 @@ class PWM:
         self.generator = pin_BCM_number
         GPIO.PWM(pin_BCM_number, 200)
         self.duty = duty
+        self.state = "on"
 
     def stop(self):
-        self.generator.stop()
+        self.state = "off"
         self.duty = 0
+        self.generator.stop()
 
     def start(self, duty=None):
         if duty is not None:
             self.duty = duty
+        self.state = "on"
         self.generator.start(duty)
 
     def change_duty(self, duty=None):
@@ -79,14 +87,13 @@ class Motor:
         """Establish control over the named GPIO pins.  The enable pin
         is set as a pwm to allow for speed control.
         """
-        self.forward_pin = forward_pin
-        self.reverse_pin = reverse_pin
-        self.enable_pin = enable_pin
-        out(self.forward_pin)
-        out(self.reverse_pin)
-        out(self.enable_pin)
-        self.pwm = PWM(self.enable_pin)
-        self.speed = 25
+        self.forward_pin = Pin(forward_pin)
+        self.reverse_pin = Pin(reverse_pin)
+        self.pwm = PWM(enable_pin)
+        self.forward_pin.out()
+        self.reverse_pin.out()
+        self.pwm.out()
+        self.speed = self.pwm.duty
 
     def enable(self, duty=None):
         """This only starts up the enable pin for the motor.  The motor
@@ -113,22 +120,22 @@ class Motor:
         correlate to the duty of the pwm, so faster motors will brake
         harder.
         """
-        off(self.forward_pin)
-        off(self.reverse_pin)
+        self.forward_pin.off()
+        self.reverse_pin.off()
 
     def stall(self):
         """Causes the motor to stop turning without resisting being
         turned.
         """
-        on(self.forward_pin)
-        on(self.reverse_pin)
+        self.forward_pin.on()
+        self.reverse_pin.on()
 
     def forward(self, duty=None):
         """Causes the motor to spin in a way that makes its wheels move
         the car forward.
         """
-        on(self.forward_pin)
-        off(self.reverse_pin)
+        self.forward_pin.on()
+        self.reverse_pin.off()
         if duty is not None:
             self.speed = duty
         self.set_speed(self.speed)
@@ -137,8 +144,8 @@ class Motor:
         """Causes the motor to spin in a way that makes its wheels move
         the car backward.
         """
-        on(self.reverse_pin)
-        off(self.forward_pin)
+        self.reverse_pin.on()
+        self.forward_pin.off()
         if duty is not None:
             self.speed = duty
         self.set_speed(self.speed)
@@ -196,7 +203,7 @@ class Car:
 
 # Here is a test script to make sure that the programming works as
 # expected.  I will move this to another file later.
-
+'''
 car = Car(Motor(5, 6, 13), Motor(23, 24, 18))
 
 car.enable(100, 100)
@@ -207,3 +214,4 @@ time.sleep(2)
 car.disable()
 car.stop()
 GPIO.cleanup()
+'''
