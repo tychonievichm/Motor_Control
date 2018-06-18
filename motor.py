@@ -16,6 +16,7 @@ import time
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
+GPIO.cleanup()
 sleeptime = 1
 
 # This block of code sets up an API for GPIO pins, to isolate calls to
@@ -56,8 +57,8 @@ class PWM(Pin):
             self.duty = duty
         else:
             self.duty = 25
-        self.generator = pin_BCM_number
-        GPIO.PWM(pin_BCM_number, 200)
+        self.out()
+        self.generator = GPIO.PWM(pin_BCM_number, 200)
         self.duty = duty
         self.state = "on"
 
@@ -92,7 +93,7 @@ class Motor:
         self.pwm = PWM(enable_pin)
         self.forward_pin.out()
         self.reverse_pin.out()
-        self.pwm.out()
+        # self.pwm.out()
         self.speed = self.pwm.duty
 
     def enable(self, duty=None):

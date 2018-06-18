@@ -11,9 +11,9 @@
 #                                                                       #
 #########################################################################
 
-# import motor
-import fake_motor as motor
-import Tkinter as tk
+import motor
+#import fake_motor as motor
+import tkinter as tk
 
 
 class CarGUI(tk.Frame):
@@ -26,6 +26,7 @@ class CarGUI(tk.Frame):
         self.buffer_frame = BufferFrame(self, 1, 100, tk.LEFT)
         self.slider_frame_right = SliderFrame(self, self.car.right)
         self.pin_frame_right = PinFrame(self, self.car.right)
+        self.car.enable(0, 0)
 
     def update(self):
         self.pin_frame_left.update()
@@ -83,7 +84,7 @@ class SliderFrame(tk.Frame):
         if x > 15:
             self.motor.forward(x)
         elif x < -15:
-            self.motor.reverse(x)
+            self.motor.reverse(-x)
         elif abs(x) < 5:
             self.motor.stop()
         else:
